@@ -4,6 +4,7 @@ import random
 import pandas as pd
 import requests
 from datetime import datetime
+from collections import OrderedDict  # ✅ ensure correct order
 
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxr9VbH4_pjofYGmTNREOsFYo9J6BEXSFAd5-zkdYVFDHAp-ozKaSuTlb5jEbvt-lvJOg/exec"
 
@@ -77,18 +78,17 @@ if st.session_state.trial_index < len(st.session_state.trials):
         if st.button("Submit"):
             if answer.strip() == "4675":
                 st.success("Correct! Trial saved.")
-                result = {
-                    "Username": st.session_state.username,
-                    "Trial": st.session_state.trial_index + 1,
-                    "Color": trial["Color"],
-                    "Distortion": trial["Distortion"],
-                    "Time_sec": round(st.session_state.response_time, 3),
-                    "Answer": answer,
-                    "Timestamp": datetime.now().isoformat()
-                }
+                result = OrderedDict([
+                    ("Username", st.session_state.username),
+                    ("Trial", st.session_state.trial_index + 1),
+                    ("Color", trial["Color"]),
+                    ("Distortion", trial["Distortion"]),
+                    ("Time_sec", round(st.session_state.response_time, 3)),
+                    ("Answer", answer),
+                    ("Timestamp", datetime.now().isoformat())
+                ])
                 st.session_state.results.append(result)
 
-                # ✅ Send to Google Sheet including Username
                 try:
                     requests.post(WEBHOOK_URL, json=result)
                 except Exception as e:
