@@ -8,7 +8,17 @@ from collections import OrderedDict
 
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx2aIPevVrrqiliUMJCXFXIc4Xaz8o3_0s_2qCZzwvR8fxxqS7MUomqyF40LxarLruBgA/exec"
 
-# Updated filenames based on correct mapping
+# Correct answers per group (case-insensitive matching will be applied)
+valid_answers = {
+    ("Mixedcolor", "None"): ["R5UM", "X4GE", "H2KD", "P7CQ", "6TVA", "D8YR"],
+    ("Mixedcolor", "Simple"): ["N8QJ", "S4VA", "E9DX", "T3KM", "J5NZ", "V6RC"],
+    ("Mixedcolor", "Complex"): ["Q2BT", "G7MW", "U8FX", "A9CJ", "M4KP", "X6DN"],
+    ("Noncolor", "None"): ["A7KQ", "M9TX", "8ZRD", "V3NC", "F6JP", "2WBY"],
+    ("Noncolor", "Simple"): ["K3BN", "Z9MU", "B5FX", "Y2GW", "C6TR", "W7HP"],
+    ("Noncolor", "Complex"): ["F3YV", "B7QA", "Z5HW", "H6GT", "R2NX", "Y8PC"]
+}
+
+# Image assignment
 image_groups = {
     ("Noncolor", "None"): [f"NCND{i}.jpg" for i in range(1, 7)],
     ("Noncolor", "Simple"): [f"NCSD{i}.jpg" for i in range(1, 7)],
@@ -97,7 +107,8 @@ if st.session_state.trial_index < len(st.session_state.trials):
                 ("Timestamp", datetime.now().isoformat())
             ])
 
-            if answer.strip() == "4675":
+            valid = valid_answers.get((trial["Color"], trial["Distortion"]), [])
+            if answer.strip().upper() in valid:
                 st.success("Correct! Trial saved.")
                 st.session_state.results.append(result)
                 try:
@@ -105,7 +116,7 @@ if st.session_state.trial_index < len(st.session_state.trials):
                 except Exception as e:
                     st.warning(f"Failed to upload to Google Sheet: {e}")
             else:
-                st.error("Incorrect. Trial skipped.")
+                st.error("Incorrect or empty. Trial skipped.")
 
             st.session_state.trial_index += 1
             st.session_state.start_time = None
