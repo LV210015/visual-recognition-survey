@@ -7,7 +7,7 @@ from datetime import datetime
 
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxr9VbH4_pjofYGmTNREOsFYo9J6BEXSFAd5-zkdYVFDHAp-ozKaSuTlb5jEbvt-lvJOg/exec"
 
-# Define the experimental conditions
+# Define your 6 text-based conditions
 treatments = [
     {"Color": "Single", "Distortion": "None", "Label": "Single Color, No Distortion"},
     {"Color": "Single", "Distortion": "Simple", "Label": "Single Color, Simple Distortion"},
@@ -40,10 +40,10 @@ if st.session_state.trial_index < len(st.session_state.trials):
         st.session_state.show_input = True
 
     if "response_time" in st.session_state and st.session_state.get("show_input"):
-        answer = st.text_input("Enter the number you recognized:")
+        answer = st.text_input("What was the number you saw?")
         if st.button("Submit"):
             if answer.strip() == "4675":
-                st.success("Correct. Trial recorded.")
+                st.success("Correct! Trial saved.")
                 result = {
                     "Trial": st.session_state.trial_index + 1,
                     "Color": trial["Color"],
@@ -60,7 +60,7 @@ if st.session_state.trial_index < len(st.session_state.trials):
                 except Exception as e:
                     st.warning(f"Failed to upload to Google Sheet: {e}")
             else:
-                st.error("Incorrect. Trial not recorded.")
+                st.error("Incorrect. Trial not saved.")
 
             # Move to next trial
             st.session_state.trial_index += 1
