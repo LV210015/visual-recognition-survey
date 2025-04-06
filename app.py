@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx2aIPevVrrqiliUMJCXFXIc4Xaz8o3_0s_2qCZzwvR8fxxqS7MUomqyF40LxarLruBgA/exec"
 
-# Define all image groups (6 per treatment)
+# Define image groups
 image_groups = {
     ("Single", "None"): [f"SCND{i}.jpg" for i in range(1, 7)],
     ("Single", "Simple"): [f"SCSD{i}.jpg" for i in range(1, 7)],
@@ -53,18 +53,18 @@ if st.session_state.show_instructions:
         st.rerun()
     st.stop()
 
-# --- Prepare trials (once only) ---
+# --- Prepare trials ---
 if "trial_index" not in st.session_state:
     trials = []
     for (color, distortion), images in image_groups.items():
-        selected_imgs = random.sample(images, 2)  # pick 2 unique images per group
+        selected_imgs = random.sample(images, 2)
         for img in selected_imgs:
             trials.append({
                 "Color": color,
                 "Distortion": distortion,
                 "Image": img
             })
-    random.shuffle(trials)  # ✅ full random shuffle
+    random.shuffle(trials)
     st.session_state.trials = trials
     st.session_state.trial_index = 0
     st.session_state.start_time = None
@@ -75,7 +75,7 @@ if st.session_state.trial_index < len(st.session_state.trials):
     trial = st.session_state.trials[st.session_state.trial_index]
     st.subheader(f"Trial {st.session_state.trial_index + 1}")
     st.markdown(f"**Condition:** {trial['Color']} Color + {trial['Distortion']} Distortion")
-    st.image(trial["Image"], use_column_width=True)
+    st.image(trial["Image"], use_container_width=True)
 
     if st.session_state.start_time is None:
         st.session_state.start_time = time.time()
@@ -87,30 +87,32 @@ if st.session_state.trial_index < len(st.session_state.trials):
     if "response_time" in st.session_state and st.session_state.get("show_input"):
         answer = st.text_input("What was the number you saw?")
         if st.button("Submit"):
+            result = OrderedDict([
+                ("Username", st.session_state.username),
+                ("Trial", st.session_state.trial_index + 1),
+                ("Color", trial["Color"]),
+                ("Distortion", trial["Distortion"]),
+                ("Time_sec", round(st.session_state.response_time, 3)),
+                ("Answer", answer),
+                ("Timestamp", datetime.now().isoformat())
+            ])
+
             if answer.strip() == "4675":
                 st.success("Correct! Trial saved.")
-                result = OrderedDict([
-                    ("Username", st.session_state.username),
-                    ("Trial", st.session_state.trial_index + 1),
-                    ("Color", trial["Color"]),
-                    ("Distortion", trial["Distortion"]),
-                    ("Time_sec", round(st.session_state.response_time, 3)),
-                    ("Answer", answer),
-                    ("Timestamp", datetime.now().isoformat())
-                ])
                 st.session_state.results.append(result)
-
                 try:
                     requests.post(WEBHOOK_URL, json=result)
                 except Exception as e:
                     st.warning(f"Failed to upload to Google Sheet: {e}")
             else:
-                st.error("Incorrect. Trial not saved.")
+                st.error("Incorrect. Trial skipped.")
 
+            # ✅ Always move to next trial
             st.session_state.trial_index += 1
             st.session_state.start_time = None
             st.session_state.show_input = False
             st.rerun()
+
 else:
     st.header("Experiment Completed")
     df = pd.DataFrame(st.session_state.results)
