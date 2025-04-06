@@ -7,7 +7,7 @@ from datetime import datetime
 
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxr9VbH4_pjofYGmTNREOsFYo9J6BEXSFAd5-zkdYVFDHAp-ozKaSuTlb5jEbvt-lvJOg/exec"
 
-# Define your 6 text-based conditions for testing (no images)
+# Define the experimental conditions
 treatments = [
     {"Color": "Single", "Distortion": "None", "Label": "Single Color, No Distortion"},
     {"Color": "Single", "Distortion": "Simple", "Label": "Single Color, Simple Distortion"},
@@ -17,7 +17,7 @@ treatments = [
     {"Color": "Mixed", "Distortion": "Complex", "Label": "Mixed Color, Complex Distortion"},
 ]
 
-st.title("🎯 Visual Recognition Experiment (Text Only Test Mode)")
+st.title("Visual Recognition Experiment")
 
 # Create session state to hold timing, trials, and results
 if "trial_index" not in st.session_state:
@@ -40,10 +40,10 @@ if st.session_state.trial_index < len(st.session_state.trials):
         st.session_state.show_input = True
 
     if "response_time" in st.session_state and st.session_state.get("show_input"):
-        answer = st.text_input("What was the number you saw?")
+        answer = st.text_input("Enter the number you recognized:")
         if st.button("Submit"):
             if answer.strip() == "4675":
-                st.success("Correct! Trial saved.")
+                st.success("Correct. Trial recorded.")
                 result = {
                     "Trial": st.session_state.trial_index + 1,
                     "Color": trial["Color"],
@@ -60,7 +60,7 @@ if st.session_state.trial_index < len(st.session_state.trials):
                 except Exception as e:
                     st.warning(f"Failed to upload to Google Sheet: {e}")
             else:
-                st.error("Incorrect. Trial not saved.")
+                st.error("Incorrect. Trial not recorded.")
 
             # Move to next trial
             st.session_state.trial_index += 1
@@ -69,12 +69,8 @@ if st.session_state.trial_index < len(st.session_state.trials):
             st.rerun()
 
 else:
-    st.header("✅ Experiment Completed")
+    st.header("Experiment Completed")
     df = pd.DataFrame(st.session_state.results)
     st.dataframe(df)
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button("Download Results as CSV", csv, "results.csv", "text/csv")
-    
-    
-
-    
