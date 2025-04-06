@@ -8,7 +8,6 @@ from collections import OrderedDict
 
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx2aIPevVrrqiliUMJCXFXIc4Xaz8o3_0s_2qCZzwvR8fxxqS7MUomqyF40LxarLruBgA/exec"
 
-# Correct answers per group
 valid_answers = {
     ("Mixedcolor", "None"): ["R5UM", "X4GE", "H2KD", "P7CQ", "6TVA", "D8YR"],
     ("Mixedcolor", "Simple"): ["N8QJ", "S4VA", "E9DX", "T3KM", "J5NZ", "V6RC"],
@@ -18,7 +17,6 @@ valid_answers = {
     ("Noncolor", "Complex"): ["F3YV", "B7QA", "Z5HW", "H6GT", "R2NX", "Y8PC"]
 }
 
-# Image files
 image_groups = {
     ("Noncolor", "None"): [f"NCND{i}.jpg" for i in range(1, 7)],
     ("Noncolor", "Simple"): [f"NCSD{i}.jpg" for i in range(1, 7)],
@@ -28,19 +26,18 @@ image_groups = {
     ("Mixedcolor", "Complex"): [f"MCCD{i}.jpg" for i in range(1, 7)],
 }
 
-# Finalized instructions
 instructions = (
     "1. You’ll see 12 images of verification codes — just recognize and type what you see.\n\n"
     "2. For each image, click the 'I Recognized It!' button before entering your answer.\n\n"
     "3. You can enter uppercase or lowercase letters — it doesn’t affect your result.\n\n"
     "4. Each code is exactly 4 characters long — please **do not include any spaces**.\n\n"
-    "5. The whole survey will take about 1 minute to complete.\n\n"
-    "6. Just relax, type naturally, and have fun with it — it’s not a test!"
+    "5. You will see one sample trial first before the real experiment begins.\n\n"
+    "6. The whole survey will take about 1 minute to complete.\n\n"
+    "7. Just relax, type naturally, and have fun with it — it’s not a test!"
 )
 
 st.title("Visual Recognition Experiment")
 
-# --- Start Page ---
 if "username" not in st.session_state:
     st.session_state.username = None
 
@@ -55,7 +52,6 @@ if st.session_state.username is None:
             st.warning("Please enter a valid nickname.")
     st.stop()
 
-# --- Instructions ---
 if "show_instructions" not in st.session_state:
     st.session_state.show_instructions = True
 
@@ -67,11 +63,11 @@ if st.session_state.show_instructions:
         st.rerun()
     st.stop()
 
-# --- Sample Trial ---
+# Sample Trial
 if st.session_state.get("show_sample_trial", True):
     st.subheader("Sample Trial")
     st.markdown("This is a practice round. Enter the code after clicking the button.")
-    st.image("sample.jpg", use_container_width=True)
+    st.image("Sample.jpg", use_container_width=True)
 
     if "sample_started" not in st.session_state:
         st.session_state.sample_started = False
@@ -91,7 +87,7 @@ if st.session_state.get("show_sample_trial", True):
                 st.error("Incorrect. Please try again.")
     st.stop()
 
-# --- Prepare Trials ---
+# Real Trials
 if "trial_index" not in st.session_state:
     trials = []
     for (color, distortion), images in image_groups.items():
@@ -108,7 +104,6 @@ if "trial_index" not in st.session_state:
     st.session_state.start_time = None
     st.session_state.results = []
 
-# --- Run Trials ---
 if st.session_state.trial_index < len(st.session_state.trials):
     trial = st.session_state.trials[st.session_state.trial_index]
     st.subheader(f"Trial {st.session_state.trial_index + 1}")
