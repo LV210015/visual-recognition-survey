@@ -8,14 +8,14 @@ from collections import OrderedDict
 
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx2aIPevVrrqiliUMJCXFXIc4Xaz8o3_0s_2qCZzwvR8fxxqS7MUomqyF40LxarLruBgA/exec"
 
-# Define image groups
+# Updated filenames based on correct mapping
 image_groups = {
-    ("Single", "None"): [f"SCND{i}.jpg" for i in range(1, 7)],
-    ("Single", "Simple"): [f"SCSD{i}.jpg" for i in range(1, 7)],
-    ("Single", "Complex"): [f"SCCD{i}.jpg" for i in range(1, 7)],
-    ("Mixed", "None"): [f"MCND{i}.jpg" for i in range(1, 7)],
-    ("Mixed", "Simple"): [f"MCSD{i}.jpg" for i in range(1, 7)],
-    ("Mixed", "Complex"): [f"MCCD{i}.jpg" for i in range(1, 7)],
+    ("Noncolor", "None"): [f"NCND{i}.jpg" for i in range(1, 7)],
+    ("Noncolor", "Simple"): [f"NCSD{i}.jpg" for i in range(1, 7)],
+    ("Noncolor", "Complex"): [f"NCCD{i}.jpg" for i in range(1, 7)],
+    ("Mixedcolor", "None"): [f"MCND{i}.jpg" for i in range(1, 7)],
+    ("Mixedcolor", "Simple"): [f"MCSD{i}.jpg" for i in range(1, 7)],
+    ("Mixedcolor", "Complex"): [f"MCCD{i}.jpg" for i in range(1, 7)],
 }
 
 instructions = (
@@ -74,7 +74,7 @@ if "trial_index" not in st.session_state:
 if st.session_state.trial_index < len(st.session_state.trials):
     trial = st.session_state.trials[st.session_state.trial_index]
     st.subheader(f"Trial {st.session_state.trial_index + 1}")
-    st.markdown(f"**Condition:** {trial['Color']} Color + {trial['Distortion']} Distortion")
+    st.markdown(f"**Condition:** {trial['Color']} + {trial['Distortion']} Distortion")
     st.image(trial["Image"], use_container_width=True)
 
     if st.session_state.start_time is None:
@@ -107,7 +107,6 @@ if st.session_state.trial_index < len(st.session_state.trials):
             else:
                 st.error("Incorrect. Trial skipped.")
 
-            # ✅ Always move to next trial
             st.session_state.trial_index += 1
             st.session_state.start_time = None
             st.session_state.show_input = False
