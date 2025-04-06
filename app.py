@@ -88,6 +88,7 @@ if st.session_state.trial_index < len(st.session_state.trials):
                 }
                 st.session_state.results.append(result)
 
+                # ✅ Send to Google Sheet including Username
                 try:
                     requests.post(WEBHOOK_URL, json=result)
                 except Exception as e:
