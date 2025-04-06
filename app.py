@@ -35,7 +35,7 @@ if st.session_state.username is None:
     if st.button("Start"):
         if name_input.strip() != "":
             st.session_state.username = name_input.strip()
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.warning("Please enter a valid nickname.")
     st.stop()
@@ -49,7 +49,7 @@ if st.session_state.show_instructions:
     st.markdown(instructions)
     if st.button("I'm ready! Start the experiment"):
         st.session_state.show_instructions = False
-        st.experimental_rerun()
+        st.rerun()
     st.stop()
 
 # --- Step 3: Trial setup ---
