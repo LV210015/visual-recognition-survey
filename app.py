@@ -38,9 +38,10 @@ instructions = (
 
 st.title("Visual Recognition Experiment")
 
-# --- Username input ---
 if "username" not in st.session_state:
     st.session_state.username = None
+if "submitted_trials" not in st.session_state:
+    st.session_state.submitted_trials = []
 
 if st.session_state.username is None:
     name_input = st.text_input("Enter a nickname to begin:")
@@ -53,7 +54,6 @@ if st.session_state.username is None:
             st.warning("Please enter a valid nickname.")
     st.stop()
 
-# --- Instructions ---
 if "show_instructions" not in st.session_state:
     st.session_state.show_instructions = True
 
@@ -65,7 +65,6 @@ if st.session_state.show_instructions:
         st.rerun()
     st.stop()
 
-# --- Intro page before sample trial ---
 if st.session_state.get("show_sample_intro", True):
     st.header("Here starts the sample trial")
     if st.button("Start Sample Trial"):
@@ -74,7 +73,6 @@ if st.session_state.get("show_sample_intro", True):
         st.rerun()
     st.stop()
 
-# --- Sample Trial ---
 if st.session_state.get("show_sample_trial", False):
     st.subheader("Sample Trial")
     st.markdown("This is a practice round. Enter the code after clicking the button.")
@@ -99,7 +97,6 @@ if st.session_state.get("show_sample_trial", False):
                 st.error("Incorrect. Please try again.")
     st.stop()
 
-# --- Intro page before real trials ---
 if st.session_state.get("show_real_intro", False):
     st.header("Here starts the real experiment")
     if st.button("Start Trial 1"):
@@ -107,7 +104,6 @@ if st.session_state.get("show_real_intro", False):
         st.rerun()
     st.stop()
 
-# --- Trial Initialization ---
 if "trial_index" not in st.session_state:
     trials = []
     for (color, distortion), images in image_groups.items():
@@ -124,7 +120,6 @@ if "trial_index" not in st.session_state:
     st.session_state.start_time = None
     st.session_state.results = []
 
-# --- Run Real Trials ---
 if st.session_state.trial_index < len(st.session_state.trials):
     trial = st.session_state.trials[st.session_state.trial_index]
     st.subheader(f"Trial {st.session_state.trial_index + 1}")
@@ -141,31 +136,33 @@ if st.session_state.trial_index < len(st.session_state.trials):
     if "response_time" in st.session_state and st.session_state.get("show_input"):
         answer = st.text_input("What was the number you saw?")
         if st.button("Submit"):
-            result = OrderedDict([
-                ("Username", st.session_state.username),
-                ("Trial", st.session_state.trial_index + 1),
-                ("Color", trial["Color"]),
-                ("Distortion", trial["Distortion"]),
-                ("Time_sec", round(st.session_state.response_time, 3)),
-                ("Answer", answer),
-                ("Timestamp", datetime.now().isoformat())
-            ])
+            if st.session_state.trial_index not in st.session_state.submitted_trials:
+                result = OrderedDict([
+                    ("Username", st.session_state.username),
+                    ("Trial", st.session_state.trial_index + 1),
+                    ("Color", trial["Color"]),
+                    ("Distortion", trial["Distortion"]),
+                    ("Time_sec", round(st.session_state.response_time, 3)),
+                    ("Answer", answer),
+                    ("Timestamp", datetime.now().isoformat())
+                ])
 
-            valid = valid_answers.get((trial["Color"], trial["Distortion"]), [])
-            if answer.strip().upper() in valid:
-                st.success("Correct! Trial saved.")
-                st.session_state.results.append(result)
-                try:
-                    requests.post(WEBHOOK_URL, json=result)
-                except Exception as e:
-                    st.warning(f"Failed to upload to Google Sheet: {e}")
-            else:
-                st.error("Incorrect or empty. Trial skipped.")
+                valid = valid_answers.get((trial["Color"], trial["Distortion"]), [])
+                if answer.strip().upper() in valid:
+                    st.success("Correct! Trial saved.")
+                    st.session_state.results.append(result)
+                    st.session_state.submitted_trials.append(st.session_state.trial_index)
+                    try:
+                        requests.post(WEBHOOK_URL, json=result)
+                    except Exception as e:
+                        st.warning(f"Failed to upload to Google Sheet: {e}")
+                else:
+                    st.error("Incorrect or empty. Trial skipped.")
 
-            st.session_state.trial_index += 1
-            st.session_state.start_time = None
-            st.session_state.show_input = False
-            st.rerun()
+                st.session_state.trial_index += 1
+                st.session_state.start_time = None
+                st.session_state.show_input = False
+                st.rerun()
 
 else:
     st.header("Experiment Completed")
