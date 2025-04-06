@@ -6,18 +6,17 @@ import requests
 from datetime import datetime
 from collections import OrderedDict
 
-# ✅ Updated Webhook URL
 WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx2aIPevVrrqiliUMJCXFXIc4Xaz8o3_0s_2qCZzwvR8fxxqS7MUomqyF40LxarLruBgA/exec"
 
-# Experimental conditions
-treatments = [
-    {"Color": "Single", "Distortion": "None", "Label": "Single Color, No Distortion"},
-    {"Color": "Single", "Distortion": "Simple", "Label": "Single Color, Simple Distortion"},
-    {"Color": "Single", "Distortion": "Complex", "Label": "Single Color, Complex Distortion"},
-    {"Color": "Mixed", "Distortion": "None", "Label": "Mixed Color, No Distortion"},
-    {"Color": "Mixed", "Distortion": "Simple", "Label": "Mixed Color, Simple Distortion"},
-    {"Color": "Mixed", "Distortion": "Complex", "Label": "Mixed Color, Complex Distortion"},
-]
+# Define all image groups (6 per treatment)
+image_groups = {
+    ("Single", "None"): [f"SCND{i}.jpg" for i in range(1, 7)],
+    ("Single", "Simple"): [f"SCSD{i}.jpg" for i in range(1, 7)],
+    ("Single", "Complex"): [f"SCCD{i}.jpg" for i in range(1, 7)],
+    ("Mixed", "None"): [f"MCND{i}.jpg" for i in range(1, 7)],
+    ("Mixed", "Simple"): [f"MCSD{i}.jpg" for i in range(1, 7)],
+    ("Mixed", "Complex"): [f"MCCD{i}.jpg" for i in range(1, 7)],
+}
 
 instructions = (
     "1. You’ll see 12 images of verification codes — just recognize and type what you see.\n\n"
@@ -28,7 +27,7 @@ instructions = (
 
 st.title("Visual Recognition Experiment")
 
-# Step 1: Start page
+# --- Start Page ---
 if "username" not in st.session_state:
     st.session_state.username = None
 
@@ -42,7 +41,7 @@ if st.session_state.username is None:
             st.warning("Please enter a valid nickname.")
     st.stop()
 
-# Step 2: Instructions
+# --- Instructions ---
 if "show_instructions" not in st.session_state:
     st.session_state.show_instructions = True
 
@@ -54,18 +53,29 @@ if st.session_state.show_instructions:
         st.rerun()
     st.stop()
 
-# Step 3: Trial setup
+# --- Prepare trials (once only) ---
 if "trial_index" not in st.session_state:
+    trials = []
+    for (color, distortion), images in image_groups.items():
+        selected_imgs = random.sample(images, 2)  # pick 2 unique images per group
+        for img in selected_imgs:
+            trials.append({
+                "Color": color,
+                "Distortion": distortion,
+                "Image": img
+            })
+    random.shuffle(trials)  # ✅ full random shuffle
+    st.session_state.trials = trials
     st.session_state.trial_index = 0
-    st.session_state.trials = random.sample(treatments * 2, 12)
     st.session_state.start_time = None
     st.session_state.results = []
 
-# Step 4: Run trials
+# --- Run trials ---
 if st.session_state.trial_index < len(st.session_state.trials):
     trial = st.session_state.trials[st.session_state.trial_index]
     st.subheader(f"Trial {st.session_state.trial_index + 1}")
-    st.markdown(f"**Condition:** {trial['Label']}")
+    st.markdown(f"**Condition:** {trial['Color']} Color + {trial['Distortion']} Distortion")
+    st.image(trial["Image"], use_column_width=True)
 
     if st.session_state.start_time is None:
         st.session_state.start_time = time.time()
