@@ -38,6 +38,7 @@ instructions = (
 
 st.title("Visual Recognition Experiment")
 
+# --- Username input ---
 if "username" not in st.session_state:
     st.session_state.username = None
 
@@ -46,12 +47,13 @@ if st.session_state.username is None:
     if st.button("Start"):
         if name_input.strip() != "":
             st.session_state.username = name_input.strip()
-            st.session_state.show_sample_trial = True
+            st.session_state.show_sample_intro = True
             st.rerun()
         else:
             st.warning("Please enter a valid nickname.")
     st.stop()
 
+# --- Instructions ---
 if "show_instructions" not in st.session_state:
     st.session_state.show_instructions = True
 
@@ -63,8 +65,17 @@ if st.session_state.show_instructions:
         st.rerun()
     st.stop()
 
-# Sample Trial
-if st.session_state.get("show_sample_trial", True):
+# --- Intro page before sample trial ---
+if st.session_state.get("show_sample_intro", True):
+    st.header("Here starts the sample trial")
+    if st.button("Start Sample Trial"):
+        st.session_state.show_sample_intro = False
+        st.session_state.show_sample_trial = True
+        st.rerun()
+    st.stop()
+
+# --- Sample Trial ---
+if st.session_state.get("show_sample_trial", False):
     st.subheader("Sample Trial")
     st.markdown("This is a practice round. Enter the code after clicking the button.")
     st.image("Sample.jpg", use_container_width=True)
@@ -79,15 +90,24 @@ if st.session_state.get("show_sample_trial", True):
         sample_answer = st.text_input("What was the number you saw?", key="sample_input")
         if st.button("Submit", key="sample_submit"):
             if sample_answer.strip().upper() == "G9G7":
-                st.success("Correct! Now starting the real experiment.")
+                st.success("Correct! Now moving to the real experiment.")
                 st.session_state.show_sample_trial = False
+                st.session_state.show_real_intro = True
                 st.session_state.sample_started = False
                 st.rerun()
             else:
                 st.error("Incorrect. Please try again.")
     st.stop()
 
-# Real Trials
+# --- Intro page before real trials ---
+if st.session_state.get("show_real_intro", False):
+    st.header("Here starts the real experiment")
+    if st.button("Start Trial 1"):
+        st.session_state.show_real_intro = False
+        st.rerun()
+    st.stop()
+
+# --- Trial Initialization ---
 if "trial_index" not in st.session_state:
     trials = []
     for (color, distortion), images in image_groups.items():
@@ -104,6 +124,7 @@ if "trial_index" not in st.session_state:
     st.session_state.start_time = None
     st.session_state.results = []
 
+# --- Run Real Trials ---
 if st.session_state.trial_index < len(st.session_state.trials):
     trial = st.session_state.trials[st.session_state.trial_index]
     st.subheader(f"Trial {st.session_state.trial_index + 1}")
