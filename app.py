@@ -4,11 +4,12 @@ import random
 import pandas as pd
 import requests
 from datetime import datetime
-from collections import OrderedDict  # ✅ ensure correct order
+from collections import OrderedDict
 
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxr9VbH4_pjofYGmTNREOsFYo9J6BEXSFAd5-zkdYVFDHAp-ozKaSuTlb5jEbvt-lvJOg/exec"
+# ✅ Updated Webhook URL
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwQZX1vvFYMOBrg9T4FGJqqxIgqV93UyLNk6wv0-PnerFoDDeaMWSHg3CZsbZ2CwkikHQ/exec"
 
-# Define experimental conditions
+# Experimental conditions
 treatments = [
     {"Color": "Single", "Distortion": "None", "Label": "Single Color, No Distortion"},
     {"Color": "Single", "Distortion": "Simple", "Label": "Single Color, Simple Distortion"},
@@ -27,7 +28,7 @@ instructions = (
 
 st.title("Visual Recognition Experiment")
 
-# --- Step 1: Start page (username input) ---
+# Step 1: Start page
 if "username" not in st.session_state:
     st.session_state.username = None
 
@@ -41,7 +42,7 @@ if st.session_state.username is None:
             st.warning("Please enter a valid nickname.")
     st.stop()
 
-# --- Step 2: Instruction page (shown only once) ---
+# Step 2: Instructions
 if "show_instructions" not in st.session_state:
     st.session_state.show_instructions = True
 
@@ -53,14 +54,14 @@ if st.session_state.show_instructions:
         st.rerun()
     st.stop()
 
-# --- Step 3: Trial setup ---
+# Step 3: Trial setup
 if "trial_index" not in st.session_state:
     st.session_state.trial_index = 0
-    st.session_state.trials = random.sample(treatments * 2, 12)  # 12 trials
+    st.session_state.trials = random.sample(treatments * 2, 12)
     st.session_state.start_time = None
     st.session_state.results = []
 
-# --- Step 4: Run trials ---
+# Step 4: Run trials
 if st.session_state.trial_index < len(st.session_state.trials):
     trial = st.session_state.trials[st.session_state.trial_index]
     st.subheader(f"Trial {st.session_state.trial_index + 1}")
@@ -100,7 +101,6 @@ if st.session_state.trial_index < len(st.session_state.trials):
             st.session_state.start_time = None
             st.session_state.show_input = False
             st.rerun()
-
 else:
     st.header("Experiment Completed")
     df = pd.DataFrame(st.session_state.results)
