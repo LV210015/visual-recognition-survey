@@ -7,7 +7,7 @@ from datetime import datetime
 from collections import OrderedDict
 
 # ✅ Updated Webhook URL
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwQZX1vvFYMOBrg9T4FGJqqxIgqV93UyLNk6wv0-PnerFoDDeaMWSHg3CZsbZ2CwkikHQ/exec"
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx2aIPevVrrqiliUMJCXFXIc4Xaz8o3_0s_2qCZzwvR8fxxqS7MUomqyF40LxarLruBgA/exec"
 
 # Experimental conditions
 treatments = [
